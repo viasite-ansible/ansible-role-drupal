@@ -6,7 +6,6 @@
   register: drupal_site_installed
   failed_when: "drupal_site_installed.stdout is undefined"
   changed_when: false
-  become: no
 
 # See: https://www.drupal.org/node/2569365#comment-11680807
 - name: Configure database correctly if using PostgreSQL.
@@ -18,20 +17,33 @@
   vars:
     ansible_ssh_pipelining: true
 
+- name: "Generate password for {{ drupal_account_name }}"
+  shell: python -c "from random import choice; print ''.join([choice('ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789_') for i in range(16)])"
+  register: drupal_register_account_pass
+  when: ('Drupal bootstrap' not in drupal_site_installed.stdout) and drupal_account_pass == ''
+
+- name: "Set password variable for {{ drupal_account_name }}"
+  set_fact:
+    drupal_account_pass: "{{ drupal_register_account_pass.stdout }}"
+  when: ('Drupal bootstrap' not in drupal_site_installed.stdout) and drupal_account_pass == ''
+
 - name: Install Drupal with drush.
   command: >
     {{ drush_path }} site-install {{ drupal_install_profile | default('standard') }} -y
     --root={{ drupal_core_path }}
     --site-name="{{ drupal_site_name }}"
+    --site-mail={{ drupal_account_mail }}
     --account-name={{ drupal_account_name }}
     --account-pass={{ drupal_account_pass }}
+    --account-mail={{ drupal_account_mail }}
     --db-url={{ drupal_db_backend }}://{{ drupal_db_user }}:{{ drupal_db_password }}@{{ drupal_db_host }}/{{ drupal_db_name }}
     {{ drupal_site_install_extra_args | join(" ") }}
   args:
     chdir: "{{ drupal_core_path }}"
   notify: clear opcache
   when: "'Drupal bootstrap' not in drupal_site_installed.stdout"
-  become: no
+  become: yes
+  become_user: "{{ drupal_core_owner }}"
 
 - name: Install configured modules with drush.
   command: >
@@ -40,4 +52,37 @@
   args:
     chdir: "{{ drupal_core_path }}"
   when: ('Drupal bootstrap' not in drupal_site_installed.stdout) and drupal_enable_modules
-  become: no
+  become: yes
+  become_user: "{{ drupal_core_owner }}"
+
+- name: Execute install scripts
+  shell: "curl {{ item }} | bash"
+  args:
+    chdir: "{{ drupal_core_path }}"
+  with_items: "{{ drupal_install_scripts }}"
+  when: ('Drupal bootstrap' not in drupal_site_installed.stdout) and drupal_install_scripts
+  become: yes
+  become_user: "{{ drupal_core_owner }}"
+  register: drupal_install_scripts_results
+  #ignore_errors: yes # need for log
+
+#- name: Write install-scripts to log (for debug)
+#  local_action:
+#    module: copy
+#    content: "stdout:\n{{ item.1.stdout }}\n\nstderr:\n{{ item.1.stderr }}"
+#    dest: "../../log/install-site-{{ drupal_install_scripts[item.0] | basename }}.log"
+#  with_indexed_items: "{{ drupal_install_scripts_results.results }}"
+#  when: drupal_install_scripts_results | changed
+
+- name: Check for drs (drupal-scripts) command
+  shell: "command -v drs || which drs"
+  failed_when: false
+  changed_when: false
+  register: drupal_drs_exists
+
+- name: Add users with drupal-scripts (if exists)
+  command: drs add-users all
+  args:
+    chdir: "{{ drupal_core_path }}"
+  register: drupal_drs_add_users
+  when: drupal_drs_exists.rc == 0

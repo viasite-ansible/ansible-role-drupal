@@ -18,8 +18,13 @@
   command: >
     {{ drush_path }} make -y /tmp/drupal.make.yml {{ drush_make_options }}
     chdir={{ drupal_core_path }}
+  register: drupal_drush_makefile
   when: not drupal_site_exists
-  become: no
+
+- name: Change owner.
+  command: >
+    chown -R {{ drupal_core_owner }}:{{ drupal_core_owner }} {{ drupal_core_path }}
+  when: drupal_drush_makefile|changed
 
 - name: Check if a composer.json file is present.
   stat: "path={{ drupal_core_path }}/composer.json"

@@ -12,7 +12,7 @@ drupal_deploy_composer_install: yes
 # Set this to 'true' and 'drupal_build_composer*' to 'false' if you would like
 # to build a Drupal make file with Drush.
 drupal_build_makefile: false
-drush_makefile_path: "/path/to/drupal.make.yml"
+drush_makefile_path: "drupal.default.make.yml"
 drush_make_options: "--no-gitinfofile"
 
 # Set 'drupal_build_makefile' to 'false' and this to 'true' if you are using a
@@ -51,3 +51,4 @@ drupal_site_install_extra_args: []
 drupal_enable_modules: []
 drupal_account_name: admin
 drupal_account_pass: admin
+drupal_account_mail: admin@example.com

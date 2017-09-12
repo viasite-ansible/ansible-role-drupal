@@ -1,0 +1,10 @@
+core: 7.x
+api: '2'
+
+defaults:
+  projects:
+    translations:
+      - ru
+
+projects:
+  - drupal
