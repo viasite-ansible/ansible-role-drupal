@@ -18,7 +18,7 @@
     drupal_site_exists: "{{ drupal_site.stat.exists|default(false) }}"
 
 # Deploy Drupal if configured.
-- include: tasks/deploy.yml
+- include: deploy.yml
   when: drupal_deploy
 
 - name: Define drupal_deploy_updated
@@ -26,22 +26,22 @@
     drupal_deploy_updated: "{{ drupal_deploy_repo_updated.changed|default(false) }}"
 
 # Run update tasks if Drupal was updated.
-- include: tasks/update.yml
+- include: update.yml
   when: drupal_deploy_updated and drupal_site_exists
   static: no
 
 # Build makefile if configured.
-- include: tasks/build-makefile.yml
+- include: build-makefile.yml
   when: drupal_build_makefile
   static: no
 
 # Build with composer if configured.
-- include: tasks/build-composer.yml
+- include: build-composer.yml
   when: drupal_build_composer
   static: no
 
 # Build a composer project if configured.
-- include: tasks/build-composer-project.yml
+- include: build-composer-project.yml
   when: drupal_build_composer_project
   static: no
 
@@ -57,6 +57,6 @@
   when: drush_vendor_bin.stat.exists
 
 # Install site if configured.
-- include: tasks/install-site.yml
+- include: install-site.yml
   when: drupal_install_site
   static: no
