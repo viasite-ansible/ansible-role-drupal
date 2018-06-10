@@ -39,3 +39,8 @@
     working_dir: "{{ drupal_composer_install_dir }}"
   with_items: "{{ drupal_composer_dependencies|default([]) }}"
   become: no
+
+- name: Change owner.
+  command: >
+    chown -R {{ drupal_core_owner }}:{{ drupal_core_owner }} {{ drupal_deploy_dir }}
+  when: not drupal_site_exists

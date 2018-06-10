@@ -8,3 +8,5 @@ defaults:
 
 projects:
   - drupal
+#  drupal:
+#    version: 7.36

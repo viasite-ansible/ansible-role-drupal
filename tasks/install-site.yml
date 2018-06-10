@@ -58,7 +58,7 @@
 - name: Execute install scripts
   shell: "curl {{ item }} | bash"
   args:
-    chdir: "{{ drupal_core_path }}"
+    chdir: "{{ drupal_deploy_dir }}"
   with_items: "{{ drupal_install_scripts }}"
   when: ('Drupal bootstrap' not in drupal_site_installed.stdout) and drupal_install_scripts
   become: yes
@@ -85,4 +85,4 @@
   args:
     chdir: "{{ drupal_core_path }}"
   register: drupal_drs_add_users
-  when: drupal_drs_exists.rc == 0
+  when: drupal_drs_exists.rc == 0 and not drupal_deploy_composer_install # not for drupal 8 at this time
