@@ -85,4 +85,4 @@
   args:
     chdir: "{{ drupal_core_path }}"
   register: drupal_drs_add_users
-  when: drupal_drs_exists.rc == 0 and not drupal_deploy_composer_install # not for drupal 8 at this time
+  when: drupal_drs_exists.rc == 0 # not for drupal 8 at this time
