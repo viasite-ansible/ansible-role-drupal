@@ -24,7 +24,7 @@
 - name: Change owner.
   command: >
     chown -R {{ drupal_core_owner }}:{{ drupal_core_owner }} {{ drupal_core_path }}
-  when: drupal_drush_makefile|changed
+  when: drupal_drush_makefile is changed
 
 - name: Check if a composer.json file is present.
   stat: "path={{ drupal_core_path }}/composer.json"

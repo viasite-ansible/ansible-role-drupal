@@ -18,7 +18,7 @@
     ansible_ssh_pipelining: true
 
 - name: "Generate password for {{ drupal_account_name }}"
-  shell: python -c "from random import choice; print ''.join([choice('ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789_') for i in range(16)])"
+  shell: python -c "from random import choice; print(''.join([choice('ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789_') for i in range(16)]))"
   register: drupal_register_account_pass
   when: ('Drupal bootstrap' not in drupal_site_installed.stdout) and drupal_account_pass == ''
 
